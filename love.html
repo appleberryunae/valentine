@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SYSTEM_CRITICAL_ERROR</title>
+    <style>
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+            overflow: hidden; background-color: #000; /* 전체 검은 배경 */
+        }
+
+        .screen {
+            display: none; flex-direction: column; align-items: center;
+            justify-content: center; width: 100%; height: 100vh;
+            text-align: center; padding: 20px; box-sizing: border-box;
+        }
+
+        /* 1단계: 에러 화면 (이미지 디자인 반영) */
+        #error-screen { display: flex; color: #fff; }
+        
+        .warning-icon {
+            width: 100px; height: 90px;
+            background-color: #ffe400; /* 노란색 삼각형 배경 */
+            clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+            display: flex; align-items: center; justify-content: center;
+            margin-bottom: 40px;
+        }
+        .warning-icon::after {
+            content: '!'; color: #000; font-size: 60px; font-weight: bold;
+            margin-top: 15px;
+        }
+
+        .error-title {
+            color: #ff3333; font-size: 32px; font-weight: bold;
+            margin-bottom: 30px; letter-spacing: 1px;
+        }
+        .error-desc {
+            font-size: 20px; line-height: 1.6; color: #eee;
+            margin-bottom: 50px; font-weight: 300;
+        }
+
+        /* 2단계: 보안 검증 */
+        #verify-screen { background-color: #000; color: #00ff00; }
+        .progress-bar { width: 300px; height: 4px; background: #222; margin: 30px 0; }
+        .progress-inner { width: 0%; height: 100%; background: #ff4040; transition: width 0.1s; }
+
+        /* 3단계: 메인 인터랙션 */
+        #main-screen { background-color: #ffffff; color: #222; }
+        
+        .btn-container { position: relative; width: 100%; height: 400px; display: flex; align-items: center; justify-content: center; gap: 50px; }
+        
+        #yesBtn {
+            padding: 22px 70px; font-size: 28px; background-color: #ff4040;
+            color: white; border-radius: 12px; cursor: pointer; border: none;
+            box-shadow: 0 10px 20px rgba(255, 64, 64, 0.3);
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 1000; font-weight: bold;
+        }
+
+        #noBtn {
+            padding: 15px 30px; font-size: 18px; background-color: #f5f5f5;
+            color: #ccc; border-radius: 8px; cursor: pointer; border: none;
+            transition: all 0.15s ease-out; white-space: nowrap; font-weight: bold;
+        }
+
+        /* 공통 버튼 (붉은색 사각형 버튼) */
+        .repair-btn {
+            background-color: #ff4040; color: #fff;
+            padding: 20px 60px; font-size: 22px; font-weight: bold;
+            border: none; border-radius: 8px; cursor: pointer;
+            transition: background 0.3s;
+        }
+        .repair-btn:hover { background-color: #e63939; }
+
+        /* 4단계: 성공 */
+        #success-screen { background-color: #fff0f3; }
+    </style>
+</head>
+<body>
+
+    <div id="error-screen" class="screen">
+        <div class="warning-icon"></div>
+        <div class="error-title">[SYSTEM CRITICAL ERROR]</div>
+        <div class="error-desc">
+            
+            데이트 의사가 확인되지 않아 시스템이 중단되었습니다.
+        </div>
+        <button class="repair-btn" onclick="startRecovery()">긴급 복구 모드 진입</button>
+    </div>
+
+    <div id="verify-screen" class="screen">
+        <h2 style="font-family: monospace; letter-spacing: 2px;">RECOVERING DATA...</h2>
+        <div class="progress-bar"><div class="progress-inner" id="bar"></div></div>
+        <p id="load-text" style="font-family: monospace;">진행률: 0%</p>
+        <div id="auth-box" style="display:none; margin-top: 20px;">
+            <p style="color: white; font-size: 20px; margin-bottom: 30px;">
+                시스템 복구를 위해 사용자의 진실성이 요구됩니다.<br><br>
+
+            <strong>"지금부터 모든 질문에 정직하게 대답하시겠습니까?"</strong>
+            </p>
+            <button class="repair-btn" style="background: white; color: black;" onclick="showScreen('main-screen')">네, 정직하게 답변하겠습니다</button>
+        </div>
+    </div>
+
+    <div id="main-screen" class="screen">
+        <h1 style="font-size: 36px; margin-bottom: 50px;">나랑 이번 발렌타인데이 같이 보낼래?</h1>
+        <div class="btn-container">
+            <button id="yesBtn" onclick="showScreen('success-screen')">좋아!</button>
+            <button id="noBtn">싫어</button>
+        </div>
+    </div>
+
+    <div id="success-screen" class="screen">
+        <h1 style="color: #ff4040; font-size: 4.5em; margin-bottom: 10px;">SUCCESS! ❤️</h1>
+        <p style="font-size: 1.5em; color: #444;">데이터 성공적으로 복구 완료되었습니다.</p>
+        <h2 style="margin-top: 40px; color: #222;"> 우리 2월 14일에 행복하게 만나자! <br> 사랑해 </h2>
+        <div style="font-size: 70px; margin-top: 30px;">🍫🌹✨</div>
+    </div>
+
+    <script>
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.style.display = 'none');
+            document.getElementById(screenId).style.display = 'flex';
+        }
+
+        function startRecovery() {
+            showScreen('verify-screen');
+            let p = 0;
+            const bar = document.getElementById('bar');
+            const txt = document.getElementById('load-text');
+            const interval = setInterval(() => {
+                p += Math.floor(Math.random() * 5) + 2;
+                if(p >= 100) {
+                    p = 100;
+                    clearInterval(interval);
+                    document.getElementById('auth-box').style.display = 'block';
+                }
+                bar.style.width = p + '%';
+                txt.innerText = `데이터 복원 중: ${p}%`;
+            }, 80);
+        }
+
+        const noBtn = document.getElementById('noBtn');
+        const yesBtn = document.getElementById('yesBtn');
+        let yesScale = 1;
+        let isEscaping = false;
+
+        document.body.addEventListener('mousemove', (e) => {
+            if(document.getElementById('main-screen').style.display === 'flex') {
+                const btnRect = noBtn.getBoundingClientRect();
+                const mouseX = e.clientX;
+                const mouseY = e.clientY;
+
+                const distance = Math.sqrt(
+                    Math.pow(mouseX - (btnRect.left + btnRect.width/2), 2) + 
+                    Math.pow(mouseY - (btnRect.top + btnRect.height/2), 2)
+                );
+
+                if (distance < 250) {
+                    if(!isEscaping) {
+                        noBtn.style.position = 'fixed';
+                        isEscaping = true;
+                    }
+                    moveButton();
+                }
+            }
+        });
+
+        function moveButton() {
+            const padding = 100;
+            const maxX = window.innerWidth - noBtn.offsetWidth - padding;
+            const maxY = window.innerHeight - noBtn.offsetHeight - padding;
+
+            noBtn.style.left = Math.max(padding, Math.floor(Math.random() * maxX)) + 'px';
+            noBtn.style.top = Math.max(padding, Math.floor(Math.random() * maxY)) + 'px';
+            
+            yesScale += 0.02; 
+            yesBtn.style.transform = `scale(${yesScale})`;
+        }
+
+        noBtn.addEventListener('click', () => {
+            alert("시스템 오류: 거절 프로세스가 존재하지 않습니다.");
+        });
+    </script>
+</body>
+</html>
